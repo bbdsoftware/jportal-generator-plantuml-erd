@@ -1,3 +1,16 @@
+<#function isForeignKey table field >
+  <#list table.getLinks() as link>
+    <#list link.getFields() as link_field>
+      <#--  <#return "X"+link_field+" X "+field.name>
+      <#if link_field?lower_case == field.name>  -->
+       <#if link.hasField(field.name)>
+        <#return true>
+       </#if>
+    </#list>
+  </#list>
+  <#return false>
+</#function>
+
 <#function getPythonType apply_to_pk field >
 <#-- @ftlvariable name="field" type="bbd.jportal2.Field" -->
     <#if field.enums?size gt 0><#return "${field.name}Enum"></#if>
@@ -42,8 +55,13 @@
     <#else><#return prefix + "str" + suffix>
     </#if>>
 </#function>
-!theme cerulean
+!theme amiga
 @startuml ${database.name}
+
+title ${database.name} ERD
+
+footer Generated on ${.now} via jportal-generator-platuml-erd (https://github.com/bbdsoftware/jportal-generator-plantuml-erd) 
+
 ' hide the spot
 hide circle
 
@@ -54,13 +72,13 @@ skinparam linetype ortho
 entity "${table.name}" as ${table.name} {
   <#list table.getFields() as field>
     <#if field.isPrimaryKey()>
-  *${field.name} : <#compress>${getPythonType(false, field)}</#compress><#if table.getLinkForField(field)??> <<FK>></#if>
+  *${field.name} : <#compress>${getPythonType(false, field)}</#compress>
     </#if>
   </#list>
   --
   <#list table.getFields() as field>
     <#if !field.isPrimaryKey()>
-    <#if !field.isNull()>*</#if>${field.name} : <#compress>${getPythonType(false, field)}</#compress> 
+    <#if !field.isNull()>*</#if>${field.name} : <#compress>${getPythonType(false, field)}</#compress><#if isForeignKey(table, field)> <<FK>></#if>
     </#if>
   </#list>
 
@@ -69,9 +87,8 @@ entity "${table.name}" as ${table.name} {
 
 <#list database.getTables() as table>
   <#list table.getLinks() as link>
-        <#--  <#if link.getName() != table.name>  -->
-${table} }o-- ${link.getName()}::${link.getFirstLinkField()}
-        <#--  </#if>  -->
+<#--  ${link.getName()}::${link.getFirstLinkField()}  --o{  ${table}  -->
+${link.getName()}  --o{  ${table}
   </#list>
 </#list>
 
