@@ -55,8 +55,8 @@
     <#else><#return prefix + "str" + suffix>
     </#if>>
 </#function>
-!theme amiga
 @startuml ${database.name}
+!theme amiga
 
 title ${database.name} ERD
 
